@@ -26,6 +26,7 @@ style.use("ggplot")
 # STYLE GRAPHIQUE TKINTER
 LARGE_FONT = ("Verdana", 17)
 MEDIUM_FONT = ("Verdana", 14)
+SMALL_FONT = ("Verdana", 11)
 ########################
 
 class ModulePrincipal(tk.Tk):
@@ -75,11 +76,11 @@ class StartPage(tk.Frame):
         bouton_graphe.pack(padx=10, pady=10)
 
         bouton_apropos = tk.Button(self, text="À propos", width=30,
-                            command=lambda: controller.show_frame(A_Propos))
+                            command=lambda: controller.show_frame(PageA_Propos))
         bouton_apropos.pack(padx=10, pady=10)
 
         bouton_configuration = tk.Button(self, text="Configuration", width=30,
-                            command=lambda: controller.show_frame(Configuration))
+                            command=lambda: controller.show_frame(PageConfiguration))
         bouton_configuration.pack(padx = 10, pady = 10)
 
         legende_lagrange = tk.Label(self, text="Joseph-Louis Lagrange, image tirée de Wikipédia")
@@ -141,13 +142,14 @@ class PageGraphe(tk.Frame):
         ###########################################
         # FRAMES D'INTERFACE
 
-        frame_droite = tk.LabelFrame(self, text="Menu", padx=10, pady=50) # Frame droite
+        frame_droite = tk.LabelFrame(self, text="Menu", padx=10, pady=50, font=MEDIUM_FONT) # Frame droite
         frame_droite.pack(side=tk.RIGHT)
 
-        frame_option = tk.LabelFrame(frame_droite, text="Options", padx=10, pady=50) # Frames des options
+        frame_option = tk.LabelFrame(frame_droite, text="Options", padx=10, pady=50, font=MEDIUM_FONT) # Frames des options
         frame_option.pack()
 
-        frame_donnees = tk.LabelFrame(frame_droite, text="Données", padx=10, pady=10, width=330, height=100) # Frames des données
+        frame_donnees = tk.LabelFrame(frame_droite, text="Données", padx=10, pady=10,
+                                      width=330, height=130, font=MEDIUM_FONT) # Frames des données
         frame_donnees.pack()
         frame_donnees.pack_propagate(False)
 
@@ -251,12 +253,20 @@ class PageGraphe(tk.Frame):
         global label_curseur_y
         curseur_x = 0
         curseur_y = 0
-        label_curseur_x = tk.Label(frame_donnees, text="X: " + str(curseur_x))
-        label_curseur_y = tk.Label(frame_donnees, text="Y: " + str(curseur_y))
+        label_curseur_x = tk.Label(frame_donnees, text="X: " + str(curseur_x), font=SMALL_FONT)
+        label_curseur_y = tk.Label(frame_donnees, text="Y: " + str(curseur_y), font=SMALL_FONT)
         label_curseur_x.pack()
         label_curseur_y.pack()
 
         ###############################################################
+
+        bouton_nettoyer_graphe = tk.Button(frame_droite, text="Nettoyer graphe", pady = 10)
+        bouton_nettoyer_graphe.pack()
+
+        ###############################################################
+
+        global point_critique_present
+        point_critique_present = False
 
         def Survol(event):
 
@@ -277,12 +287,14 @@ class PageGraphe(tk.Frame):
             global label_curseur_x
             global label_curseur_y
 
+            global point_critique_present
+
             label_curseur_x.pack_forget()
             label_curseur_y.pack_forget()
             curseur_x = np.round(event.xdata, 3)
             curseur_y = np.round(event.ydata, 3)
-            label_curseur_x = tk.Label(frame_donnees, text="X: " + str(curseur_x))
-            label_curseur_y = tk.Label(frame_donnees, text="Y: " + str(curseur_y))
+            label_curseur_x = tk.Label(frame_donnees, text="X: " + str(curseur_x), font=SMALL_FONT)
+            label_curseur_y = tk.Label(frame_donnees, text="Y: " + str(curseur_y), font=SMALL_FONT)
             label_curseur_x.pack()
             label_curseur_y.pack()
 
@@ -298,11 +310,11 @@ class PageGraphe(tk.Frame):
 
             a.add_patch(fig_gradient_rosenbrock)
 
-            point_actuel.afficher()
+            # point_actuel.afficher()
             point_contrainte = point_actuel.trouver_point_proche(ellipse_data.points_)
 
-            print("Point de l'ellipse le plus proche: ")
-            point_contrainte.afficher()
+            # print("Point de l'ellipse le plus proche: ")
+            # point_contrainte.afficher()
 
             fig_gradient_contrainte = mpatches.FancyArrowPatch((point_contrainte.x_, point_contrainte.y_),
                                              (ellipse_data.gradient_x(point_contrainte)/5,
@@ -317,6 +329,7 @@ class PageGraphe(tk.Frame):
                     and contrainte_presente == True:
                 a.add_patch(fig_gradient_contrainte)
 
+
             canvas.draw()
 
             vecteur_gradient_contrainte = vecteur.Vecteur(point_contrainte, point_2d.Point_2D(ellipse_data.gradient_x(point_contrainte),
@@ -324,22 +337,27 @@ class PageGraphe(tk.Frame):
             vecteur_gradient_rosenbrock = vecteur.Vecteur(point_actuel, point_2d.Point_2D(gradient_rosenbrock_X(point_actuel.x_, point_actuel.y_)
                                                                                           ,gradient_rosenbrock_Y(point_actuel.x_, point_actuel.y_)))
 
-            if vecteur_gradient_contrainte.verifier_colinearite(vecteur_gradient_rosenbrock):
-                print("Point Critique")
-            else:
-                print("null")
+            # if vecteur_gradient_contrainte.verifier_colinearite(vecteur_gradient_rosenbrock):
+            #     print("Point Critique")
+            # else:
+            #     print("null")
 
-            vecteur_gradient_contrainte.print_rapport(vecteur_gradient_rosenbrock)
-            print("Norme gradient rosenbrock: " + str(np.real(vecteur_gradient_rosenbrock.norme_)))
-            print("Norme gradient contrainte: " + str(np.real(vecteur_gradient_contrainte.norme_)))
-            print(vecteur_gradient_contrainte.verifier_colinearite(vecteur_gradient_rosenbrock))
-            vecteur_gradient_contrainte.print_multiplicateur(vecteur_gradient_rosenbrock)
+            # vecteur_gradient_contrainte.print_rapport(vecteur_gradient_rosenbrock)
+            # print("Norme gradient rosenbrock: " + str(np.real(vecteur_gradient_rosenbrock.norme_)))
+            # print("Norme gradient contrainte: " + str(np.real(vecteur_gradient_contrainte.norme_)))
+            # print(vecteur_gradient_contrainte.verifier_colinearite(vecteur_gradient_rosenbrock))
+            # vecteur_gradient_contrainte.print_multiplicateur(vecteur_gradient_rosenbrock)
 
             if aff_gradient_contrainte == True and vecteur_gradient_contrainte.verifier_colinearite(vecteur_gradient_rosenbrock):
                 valeur_multiplicateur = np.round(vecteur_gradient_contrainte.get_multiplicateur(vecteur_gradient_rosenbrock), 2)
                 label_multiplicateur.pack_forget()
                 label_multiplicateur = tk.Label(frame_donnees, fg="green", text="Valeur de λ : " + str(valeur_multiplicateur), font=MEDIUM_FONT)
                 label_multiplicateur.pack()
+
+                if point_critique_present == False:
+                    point_critique_present = True
+                    a.scatter(point_actuel.x_, point_actuel.y_, s=25, c="red")
+
 
             fig_gradient_rosenbrock.set_visible(False)
             fig_gradient_contrainte.set_visible(False)
