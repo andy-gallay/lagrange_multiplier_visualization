@@ -36,7 +36,7 @@ Python modules required :
 - Pillow (or PIL)
 - matplotlib
 - numpy
-Tkinter
+- Tkinter
 
 It will be possible to launch the software through an .exe file in the nearby future. For now, you should enter: "python main.py" in your command prompt to execute the software.
 
