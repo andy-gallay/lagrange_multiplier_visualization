@@ -2,7 +2,7 @@
 Python tool for Lagrange Multiplier visualization
 
 Liste des modules Python externes à installer :
-- Pillow (ou PIP)
+- Pillow (ou PIL)
 - matplotlib
 - numpy
 - Tkinter
