@@ -1,5 +1,6 @@
 # MODULES PERSONNALISES
 import ellipse
+import cercle
 import point_2d
 import vecteur
 import fonctionsMath as fnct
@@ -41,14 +42,14 @@ SMALL_FONT = ("Verdana", 11)
 
 # TODO: modifier le curseur de la souris lorsqu'il est sur le plot du graphe
 # TODO: [DONE] définir une norme de codage pour les différents objets Tkinter (Bouton, Checkboxes, etc...)
-# TODO: [IN-PROGRESS] implémenter les fonctions mathématiques dans un fichier secondaire (ex: fncnt.py)
-# TODO: [IN-PROGRESS] implémenter des nouvelles contraintes (possiblement dans un fichier contraintes.py)
+# TODO: [DONE] implémenter les fonctions mathématiques dans un fichier secondaire (ex: fncnt.py)
+# TODO: [IN-PROGRESS] implémenter des nouvelles contraintes
 # TODO: [DONE] regrouper les éléments Tkinter d'un même type ensemble (lorsque possible)
 # TODO: transitionner vers grid() plutôt que pack() avec Tkinter
-# TODO: étoffer la partie À Propos du logiciel
+# TODO: [DONE] étoffer la partie À Propos du logiciel
 # TODO: définir des options de configurations pour le logiciel
 # TODO: ajouter la langue anglaise (non prioritaire)
-# TODO: permettre d'avoir plusieurs multiplicateurs dessinés sur une même figure
+# TODO: [DONE] permettre d'avoir plusieurs points critiques dessinés sur une même figure
 
 # TODO: étoffer le README de GitHub pour permettre aux utilisateurs de créer un exécutable pour leur plateforme
 
@@ -93,15 +94,15 @@ class StartPage(tk.Frame):
         LABEL_titre.pack(pady=10, padx=10)
 
         BOUTON_graphe = tk.Button(self, text="Graphe", width=30,
-                                  command=lambda: controller.show_frame(PageGraphe))
+                                  command=lambda: controller.show_frame(PageGraphe), font=MEDIUM_FONT)
         BOUTON_graphe.pack(padx=10, pady=10)
 
         BOUTON_apropos = tk.Button(self, text="À propos", width=30,
-                            command=lambda: controller.show_frame(PageA_Propos))
+                            command=lambda: controller.show_frame(PageA_Propos), font=MEDIUM_FONT)
         BOUTON_apropos.pack(padx=10, pady=10)
 
         BOUTON_configuration = tk.Button(self, text="Configuration", width=30,
-                            command=lambda: controller.show_frame(PageConfiguration))
+                            command=lambda: controller.show_frame(PageConfiguration), font=MEDIUM_FONT)
         BOUTON_configuration.pack(padx = 10, pady = 10)
 
         LABEL_texte_a_propos = tk.Label(self, pady=10,
@@ -133,7 +134,7 @@ class PageA_Propos(tk.Frame):
 
         LABEL_texte_a_propos = tk.Label(self, pady=10, text="Logiciel développé par Andy GALLAY - École Polytechnique de Montréal", font=MEDIUM_FONT, fg="blue")
         LABEL_email = tk.Label(self, pady=10, text="andy.gallay@polymtl.ca", font=MEDIUM_FONT, fg="blue")
-        LABEL_description_lien = tk.Label(self, pady=10, text="Ce logiciel est open-source, lien du dépôt GitHub: ")
+        LABEL_description_lien = tk.Label(self, pady=10, text="Ce logiciel est open-source et libre de droit, lien du dépôt GitHub: ")
         LABEL_lien_git = tk.Label(self, pady=10, text="https://github.com/andy-gallay/lagrange_multiplier_visualization",
                                   fg="blue")
 
@@ -171,6 +172,14 @@ class PageGraphe(tk.Frame):
         global POINT_ACTUEL # Point (x, y) pointé par le curseur de la souris
         POINT_ACTUEL = point_2d.Point_2D(0, 0)
 
+        global LISTE_POINTS_CRITIQUES
+        LISTE_POINTS_CRITIQUES = []
+
+        global POINT_CRITIQUE_FIG
+
+        global LISTE_POINTS_CRITIQUES_FIGS
+        LISTE_POINTS_CRITIQUES_FIGS = []
+
         tk.Frame.__init__(self, parent)
         LABEL_titre = tk.Label(self, text="Graphe", font=LARGE_FONT)
         LABEL_titre.pack(pady=10, padx=10)
@@ -184,7 +193,7 @@ class PageGraphe(tk.Frame):
         FRAME_droite = tk.LabelFrame(self, text="Menu", padx=10, pady=10, font=MEDIUM_FONT) # Frame droite
         FRAME_droite.pack(side=tk.RIGHT)
 
-        FRAME_options = tk.LabelFrame(FRAME_droite, text="Options", padx=10, pady=10, font=MEDIUM_FONT) # Frames des options
+        FRAME_options = tk.LabelFrame(FRAME_droite, text="Options", width=330, padx=10, pady=10, font=MEDIUM_FONT) # Frames des options
         FRAME_options.pack()
 
         FRAME_donnees = tk.LabelFrame(FRAME_droite, text="Données", padx=10, pady=20,
@@ -193,10 +202,10 @@ class PageGraphe(tk.Frame):
         SUB_FRAME_donnees_curseur = tk.LabelFrame(FRAME_donnees, text="Curseur", width=110, height=80)
 
         SUB_FRAME_donnees_gradient_fonction = tk.LabelFrame(FRAME_donnees, text="Grdt. fonct.",
-                                                           width=110, height=80) # Frame des coord. du gradt de la fnct
+                                                           width=110, height=80, fg="blue") # Frame des coord. du gradt de la fnct
 
         SUB_FRAME_donnees_gradient_contrainte = tk.LabelFrame(FRAME_donnees, text="Grdt. contr.",
-                                                           width=110, height=80) # Frame des coord. du gradt. de la contr
+                                                           width=110, height=80, fg="red") # Frame des coord. du gradt. de la contr
 
         SUB_FRAME_donnees_gradient_contrainte.pack(side=tk.RIGHT)
         SUB_FRAME_donnees_gradient_contrainte.pack_propagate(False)
@@ -215,6 +224,7 @@ class PageGraphe(tk.Frame):
         FRAME_donnees.pack_propagate(False)
 
         ###########################################
+        ###########################################
 
         f = Figure(figsize=(6, 6), dpi=100)
         a = f.add_subplot(111)
@@ -228,10 +238,95 @@ class PageGraphe(tk.Frame):
         # DEFINITION DES POINTS D'UNE ELLIPSE
         ellipse_data = ellipse.Ellipse(point_2d.Point_2D(0, 0), 1.0, 0.6)
 
+        # DEFINITION DES POINTS D'UN CERCLE
+        cercle_data =  cercle.Cercle(point_2d.Point_2D(0,0), 0.5)
+
         # DEFINITION DE LA FIGURE D'UNE ELLIPSE
         global ELLIPSE_FIGURE
         ELLIPSE_FIGURE = mpatches.Ellipse([0, 0], 1, 0.6, linewidth=1, fill=0, color="red")
-        a.add_patch(ELLIPSE_FIGURE)
+
+
+        # DEFINITION DE LA FIGURE D'UN CERCLE
+        global CERCLE_FIGURE
+        CERCLE_FIGURE = mpatches.Circle([0, 0], 0.5, linewidth=1, fill=0, color="green")
+
+        #####################################
+        #####################################
+
+
+
+        ListeContraintes = \
+            [tk.StringVar(value="Ellipse", name="Ellipse").get(), tk.StringVar(value="Cercle", name="Cercle").get()]
+
+        TableauContraintes = \
+            [
+                ELLIPSE_FIGURE,
+                CERCLE_FIGURE
+            ]
+
+        global CONTRAINTE_CHOISIE
+        CONTRAINTE_CHOISIE = tk.StringVar()
+        CONTRAINTE_CHOISIE.set(ListeContraintes[0])
+
+        global FIGURE_CONTRAINTE
+        FIGURE_CONTRAINTE = TableauContraintes[0]
+
+        a.add_patch(FIGURE_CONTRAINTE)
+
+        global CONTRAINTE_PRESENTE
+        CONTRAINTE_PRESENTE = True
+
+        def RetirerContrainte():
+
+            global ELLIPSE_FIGURE
+            global CONTRAINTE_PRESENTE
+
+            if not CONTRAINTE_PRESENTE:
+                return
+
+            FIGURE_CONTRAINTE.remove()
+
+            CONTRAINTE_PRESENTE = False
+            canvas.draw()
+            return
+
+        def AjouterContrainte():
+
+            global FIGURE_CONTRAINTE
+            global ELLIPSE_FIGURE
+            global CONTRAINTE_PRESENTE
+
+            if CONTRAINTE_PRESENTE == True:
+                return
+
+            if CONTRAINTE_PRESENTE == False:
+
+                a.add_patch(FIGURE_CONTRAINTE)
+                CONTRAINTE_PRESENTE = True
+                canvas.draw()
+
+            return
+
+
+        def choix_contrainte(*args):
+
+            global FIGURE_CONTRAINTE
+            global CONTRAINTE_CHOISIE
+            global CONTRAINTE_PRESENTE
+
+            FIGURE_CONTRAINTE.remove()
+            FIGURE_CONTRAINTE = TableauContraintes[ListeContraintes.index(CONTRAINTE_CHOISIE.get())]
+            a.add_patch(FIGURE_CONTRAINTE)
+            canvas.draw()
+
+            CONTRAINTE_PRESENTE = True
+
+            return
+
+        CONTRAINTE_CHOISIE.trace("w", choix_contrainte)
+
+        #####################################
+        #####################################
 
         canvas = FigureCanvasTkAgg(f, self)
         canvas.draw()
@@ -246,31 +341,6 @@ class PageGraphe(tk.Frame):
         # La variable contrainte_presente permet d'ajouter ou de retirer
         # une contrainte, elle est globale car manipulée dans la fonction
         # AjouterRetirerContrainte
-
-        global CONTRAINTE_PRESENTE
-        CONTRAINTE_PRESENTE = True
-
-        def RetirerContrainte():
-            # global cercle
-            global ELLIPSE_FIGURE
-            global CONTRAINTE_PRESENTE
-            # cercle.remove()
-            ELLIPSE_FIGURE.remove()
-            CONTRAINTE_PRESENTE = False
-            canvas.draw()
-            return
-
-        def AjouterContrainte():
-            # global cercle
-            global ELLIPSE_FIGURE
-            global CONTRAINTE_PRESENTE
-            if CONTRAINTE_PRESENTE == False:
-                # a.add_patch(cercle)
-                a.add_patch(ELLIPSE_FIGURE)
-                CONTRAINTE_PRESENTE = True
-                canvas.draw()
-            return
-
 
         global AFFICHER_GRDT_CONTRAINTE
         AFFICHER_GRDT_CONTRAINTE = False
@@ -367,6 +437,8 @@ class PageGraphe(tk.Frame):
 
             global POINT_CRITIQUE_PRESENT
 
+            global LISTE_POINTS_CRITIQUES
+
             ##############################
 
             LABEL_CURSEUR_X.pack_forget()
@@ -390,20 +462,13 @@ class PageGraphe(tk.Frame):
 
             a.add_patch(fig_gradient_rosenbrock)
 
-            # point_actuel.afficher()
             point_contrainte = POINT_ACTUEL.trouver_point_proche(ellipse_data.points_)
-
-            # print("Point de l'ellipse le plus proche: ")
-            # point_contrainte.afficher()
 
             fig_gradient_contrainte = mpatches.FancyArrowPatch((point_contrainte.x_, point_contrainte.y_),
                                              (ellipse_data.gradient_x(point_contrainte),
                                               ellipse_data.gradient_y(point_contrainte)),
                                              mutation_scale=8, color='r')
 
-            # gradient_contrainte = mpatches.FancyArrowPatch((point_contrainte.x_, point_contrainte.y_),
-            #                                  (point_contrainte.x_+0.5, point_contrainte.y_ + 0.5),
-            #                                  mutation_scale=10, color='r')
 
             if AFFICHER_GRDT_CONTRAINTE == True and POINT_ACTUEL.def_distance(point_contrainte)<0.1\
                     and CONTRAINTE_PRESENTE == True:
@@ -412,21 +477,16 @@ class PageGraphe(tk.Frame):
 
             canvas.draw()
 
-            vecteur_gradient_contrainte = vecteur.Vecteur(point_contrainte, point_2d.Point_2D(ellipse_data.gradient_x(point_contrainte),
+            if CONTRAINTE_CHOISIE.get() == ListeContraintes[0]:
+                vecteur_gradient_contrainte = vecteur.Vecteur(point_contrainte, point_2d.Point_2D(ellipse_data.gradient_x(point_contrainte),
                                                                                               ellipse_data.gradient_y(point_contrainte)))
-            vecteur_gradient_rosenbrock = vecteur.Vecteur(POINT_ACTUEL, point_2d.Point_2D(fnct.gradient_rosenbrock_X(POINT_ACTUEL.x_, POINT_ACTUEL.y_)
-                                                                                          , fnct.gradient_rosenbrock_Y(POINT_ACTUEL.x_, POINT_ACTUEL.y_)))
+            if CONTRAINTE_CHOISIE.get() == ListeContraintes[1]:
+                vecteur_gradient_contrainte = vecteur.Vecteur(point_contrainte, point_2d.Point_2D(cercle_data.gradient_x(point_contrainte),
+                                                                                              cercle_data.gradient_y(point_contrainte)))
 
-            # if vecteur_gradient_contrainte.verifier_colinearite(vecteur_gradient_rosenbrock):
-            #     print("Point Critique")
-            # else:
-            #     print("null")
-
-            # vecteur_gradient_contrainte.print_rapport(vecteur_gradient_rosenbrock)
-            # print("Norme gradient rosenbrock: " + str(np.real(vecteur_gradient_rosenbrock.norme_)))
-            # print("Norme gradient contrainte: " + str(np.real(vecteur_gradient_contrainte.norme_)))
-            # print(vecteur_gradient_contrainte.verifier_colinearite(vecteur_gradient_rosenbrock))
-            # vecteur_gradient_contrainte.print_multiplicateur(vecteur_gradient_rosenbrock)
+            vecteur_gradient_rosenbrock = vecteur.Vecteur(POINT_ACTUEL, point_2d.Point_2D(
+                fnct.gradient_rosenbrock_X(POINT_ACTUEL.x_, POINT_ACTUEL.y_)
+                , fnct.gradient_rosenbrock_Y(POINT_ACTUEL.x_, POINT_ACTUEL.y_)))
 
             LABEL_GRADIENT_FONCTION_X.pack_forget()
             LABEL_GRADIENT_FONCTION_Y.pack_forget()
@@ -440,6 +500,7 @@ class PageGraphe(tk.Frame):
             LABEL_GRADIENT_FONCTION_Y.pack()
 
             if AFFICHER_GRDT_CONTRAINTE == True and vecteur_gradient_contrainte.verifier_colinearite(vecteur_gradient_rosenbrock):
+
                 VALEUR_MULTIPLICATEUR = np.round(vecteur_gradient_contrainte.get_multiplicateur(vecteur_gradient_rosenbrock), 2)
                 LABEL_MULTIPLICATEUR.pack_forget()
                 LABEL_MULTIPLICATEUR = tk.Label(FRAME_lambda, fg="green", text="Valeur approx. de λ : " + str(np.round(VALEUR_MULTIPLICATEUR, 1)), font=SMALL_FONT)
@@ -455,12 +516,16 @@ class PageGraphe(tk.Frame):
                 LABEL_GRADIENT_CONTRAINTE_Y.pack()
 
                 ## PERMET D'AJOUTER UN POINT SUR LA FIGURE LORSQU'UN POINT CRITIQUE EST RENCONTRÉ
-                if POINT_CRITIQUE_PRESENT == False:
-                    # point_critique_present = True
-                    # a.scatter(point_actuel.x_, point_actuel.y_, s=30, c="red")
-                    POINT_CRITIQUE_PRESENT = True
-                    global POINT_CRITIQUE_FIG
-                    POINT_CRITIQUE_FIG = a.scatter(point_contrainte.x_, point_contrainte.y_, s=30, c="red")
+
+                # Si aucun point critique existant n'est proche du point critique observé
+                if not point_contrainte.point_adjacent(LISTE_POINTS_CRITIQUES, 0.1):
+
+                    # Alors on ajoute ce nouveau point critique à la liste des points critiques
+                    LISTE_POINTS_CRITIQUES.append(point_contrainte)
+                    # Puis on ajoute la figure représentant ce point critique à la liste des figures de points critiques
+                    LISTE_POINTS_CRITIQUES_FIGS.append(a.scatter(point_contrainte.x_, point_contrainte.y_, s=20, c="cyan", zorder=3))
+
+                canvas.draw()
 
             else:
                 LABEL_MULTIPLICATEUR.pack_forget()
@@ -474,10 +539,21 @@ class PageGraphe(tk.Frame):
         def enlever_point_critique_fig():
             global POINT_CRITIQUE_PRESENT
             global POINT_CRITIQUE_FIG
-            if POINT_CRITIQUE_PRESENT == True:
-                POINT_CRITIQUE_PRESENT = False
-                POINT_CRITIQUE_FIG.remove()
+
+            global LISTE_POINTS_CRITIQUES
+            global LISTE_POINTS_CRITIQUES_FIGS
+
+            if not LISTE_POINTS_CRITIQUES_FIGS:
+                return
+            else:
+                for POINT_CRITIQUE_FIG in LISTE_POINTS_CRITIQUES_FIGS:
+                    POINT_CRITIQUE_FIG.remove()
+
+                LISTE_POINTS_CRITIQUES_FIGS.clear()
+                LISTE_POINTS_CRITIQUES.clear()
+
                 canvas.draw()
+
 
         ''' BOUTONS D'INTERFACE '''
 
@@ -497,6 +573,16 @@ class PageGraphe(tk.Frame):
         BUTTON_nettoyer_graphe = tk.Button(FRAME_options, text="Nettoyer graphe", padx=5, pady=10, width=40,
                                            command=enlever_point_critique_fig)
         BUTTON_nettoyer_graphe.pack()
+
+
+        ''' ###################### '''
+
+        ''' MENUS DEROULANTS D'INTERFACE '''
+
+        # LABEL_choix_contraintes = tk.Label(FRAME_options, text="Choix de la contrainte:")
+        # MENU_DEROULANT_contraintes = tk.OptionMenu(FRAME_options, CONTRAINTE_CHOISIE, *ListeContraintes)
+        # LABEL_choix_contraintes.pack()
+        # MENU_DEROULANT_contraintes.pack()
 
         ''' ###################### '''
 

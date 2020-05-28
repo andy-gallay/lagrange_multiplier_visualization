@@ -22,3 +22,9 @@ class Point_2D:
         for point in ensemble_points:
             if self.def_distance(point) == distance:
                 return point
+
+    def point_adjacent(self, data, proximite):
+        for point in data:
+            if self.def_distance(point) <= 0.05:
+                return True
+        return False

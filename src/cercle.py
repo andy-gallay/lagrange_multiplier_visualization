@@ -29,8 +29,8 @@ class Cercle:
         self.centre_.afficher()
         print("et de rayon " + str(self.rayon_))
 
-cercle_data = Cercle(point_2d.Point_2D(0, 0), 5)
-cercle_data.afficher()
+    def gradient_x(self, point):
+        return (2 * point.x_)
 
-for element in cercle_data.points_:
-    element.afficher()
+    def gradient_y(self, point):
+        return (2 * point.y_)
