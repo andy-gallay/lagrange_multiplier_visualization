@@ -35,20 +35,23 @@ SMALL_FONT = ("Verdana", 11)
 
 # Les variables globales sont en MAJUSCULE et les variables non globales utilisent la convention CamelCase
 
+# NOMS POTENTIELS: LMV (pour Lagrange Multiplier Visualizer)
+
 # TODO: trouver un nom pour le logiciel (LMV?...)
 
-# TODO: effecuter du nettoyage dans le code, par exemple pour retirer les variables inutiles (globales etc)
 # TODO: encapsuler un maximum de code dans des fichiers .py externes
-
 # TODO: modifier le curseur de la souris lorsqu'il est sur le plot du graphe
-# TODO: [DONE] définir une norme de codage pour les différents objets Tkinter (Bouton, Checkboxes, etc...)
-# TODO: [DONE] implémenter les fonctions mathématiques dans un fichier secondaire (ex: fncnt.py)
-# TODO: [IN-PROGRESS] implémenter des nouvelles contraintes
-# TODO: [DONE] regrouper les éléments Tkinter d'un même type ensemble (lorsque possible)
 # TODO: transitionner vers grid() plutôt que pack() avec Tkinter
-# TODO: [DONE] étoffer la partie À Propos du logiciel
 # TODO: définir des options de configurations pour le logiciel
 # TODO: ajouter la langue anglaise (non prioritaire)
+
+# TODO: [IN-PROGRESS] implémenter des nouvelles contraintes
+
+# TODO: [DONE] effecuter du nettoyage dans le code, par exemple pour retirer les variables inutiles (globales etc)
+# TODO: [DONE] définir une norme de codage pour les différents objets Tkinter (Bouton, Checkboxes, etc...)
+# TODO: [DONE] implémenter les fonctions mathématiques dans un fichier secondaire (ex: fncnt.py)
+# TODO: [DONE] regrouper les éléments Tkinter d'un même type ensemble (lorsque possible)
+# TODO: [DONE] étoffer la partie À Propos du logiciel
 # TODO: [DONE] permettre d'avoir plusieurs points critiques dessinés sur une même figure
 
 # TODO: étoffer le README de GitHub pour permettre aux utilisateurs de créer un exécutable pour leur plateforme
@@ -90,8 +93,11 @@ class StartPage(tk.Frame):
         LABEL_LAGRANGE = tk.Label(self, image=IMG_LAGRANGE)
         LABEL_LAGRANGE.place(x=0, y=0, relwidth=1, relheight=1)
 
-        LABEL_titre = tk.Label(self, text="Visualisation des multiplicateurs de Lagrange", font=LARGE_FONT)
-        LABEL_titre.pack(pady=10, padx=10)
+        LABEL_titre = tk.Label(self, text="LMV - LAGRANGE MULTIPLIER VISUALIZER", font=LARGE_FONT)
+        LABEL_titre.pack()
+
+        LABEL_sous_titre = tk.Label(self, text="Outil de visualisation des multiplicateurs de Lagrange", font=MEDIUM_FONT)
+        LABEL_sous_titre.pack(pady=10, padx=10)
 
         BOUTON_graphe = tk.Button(self, text="Graphe", width=30,
                                   command=lambda: controller.show_frame(PageGraphe), font=MEDIUM_FONT)
@@ -193,7 +199,7 @@ class PageGraphe(tk.Frame):
         FRAME_droite = tk.LabelFrame(self, text="Menu", padx=10, pady=10, font=MEDIUM_FONT) # Frame droite
         FRAME_droite.pack(side=tk.RIGHT)
 
-        FRAME_options = tk.LabelFrame(FRAME_droite, text="Options", width=330, padx=10, pady=10, font=MEDIUM_FONT) # Frames des options
+        FRAME_options = tk.LabelFrame(FRAME_droite, text="Options", width=330, padx=10, pady=20, font=MEDIUM_FONT) # Frames des options
         FRAME_options.pack()
 
         FRAME_donnees = tk.LabelFrame(FRAME_droite, text="Données", padx=10, pady=20,
@@ -232,7 +238,7 @@ class PageGraphe(tk.Frame):
         x, y = np.meshgrid(np.linspace(-1.2, 1.2, 201), np.linspace(-1.2, 1.2, 201))
         z = fnct.fonction_rosenbrock(x, y)
 
-        graphe = a.contour(x, y, z, 40, zorder=0)
+        graphe = a.contour(x, y, z, 25, zorder=0)
         a.autoscale(False) # évite que le graphe se redimensionne
 
         # DEFINITION DES POINTS D'UNE ELLIPSE
@@ -594,9 +600,9 @@ class PageGraphe(tk.Frame):
 
         ''' #####################  '''
 
-        cid = canvas.mpl_connect('motion_notify_event', Survol)
+        canvas.mpl_connect('motion_notify_event', Survol)
 
 app = ModulePrincipal()
 app.iconbitmap('../img/graph_icon.ico') # defining the bee icon (POLYTECHNIQUE MONTREAL)
-app.wm_title("Lagrange Multiplier Visualizer")
+app.wm_title("LMV")
 app.mainloop()
